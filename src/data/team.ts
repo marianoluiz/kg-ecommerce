@@ -1,0 +1,8 @@
+export const teamMembers = [
+  "CO, KHURT LUIS",
+  "CANTAL, HENKEPECK T.",
+  "CRUZ, JOSHUA CARVEY F.",
+  "KING, MARIANO LUIZ B.",
+  "PACOMIO, ADAM COLLIN ZACHARY",
+  "RAMOS, JHAPET",
+];
