@@ -3,8 +3,8 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import type { Product } from "@/data/products";
 import { formatPeso } from "@/lib/format";
 import { useCart } from "./CartProvider";
@@ -13,8 +13,8 @@ const SIZES = ["XS", "S", "M", "L", "XL"] as const;
 type Size = (typeof SIZES)[number];
 
 export function ProductCard({ product }: { product: Product }) {
-  const { addItem } = useCart();
   const router = useRouter();
+  const { addItem } = useCart();
 
   const [isOpen, setIsOpen] = useState(false);
   const [selectedSize, setSelectedSize] = useState<Size | null>(null);
@@ -25,15 +25,15 @@ export function ProductCard({ product }: { product: Product }) {
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
-    function handleEscape(event: KeyboardEvent) {
+    const onEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") setIsOpen(false);
-    }
+    };
 
-    window.addEventListener("keydown", handleEscape);
+    window.addEventListener("keydown", onEscape);
 
     return () => {
       document.body.style.overflow = previousOverflow;
-      window.removeEventListener("keydown", handleEscape);
+      window.removeEventListener("keydown", onEscape);
     };
   }, [isOpen]);
 
@@ -45,8 +45,6 @@ export function ProductCard({ product }: { product: Product }) {
   function addSelectedProduct() {
     if (!selectedSize) return false;
 
-    // Unique ID keeps each size separate in the cart.
-    // Size is also displayed in the product name.
     const sizedProduct: Product = {
       ...product,
       id: `${product.id}-size-${selectedSize.toLowerCase()}`,
@@ -135,14 +133,12 @@ export function ProductCard({ product }: { product: Product }) {
                   src={product.image}
                   alt={product.alt}
                   fill
-                  sizes="(max-width: 600px) 90vw, 320px"
+                  sizes="(max-width: 700px) 90vw, 650px"
                 />
               </div>
 
               <div className="kg-modal-details">
-                <span className="kg-brand">
-                  KALLOS GORGON
-                </span>
+                <span className="kg-brand">KALLOS GORGON</span>
 
                 <h2>{product.name}</h2>
 
