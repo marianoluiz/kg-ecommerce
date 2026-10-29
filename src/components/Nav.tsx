@@ -18,13 +18,36 @@ export function Nav() {
 
   return (
     <nav className={`site-nav${scrolled ? " scrolled" : ""}`}>
+      {/* Brand Logo */}
       <Link href="/" className="nav-logo" aria-label="Kallos Gorgon home">
-        <Image src="/images/brand/logo.png" alt="Kallos Gorgon Logo" width={677} height={369} priority />
+        <Image
+          src="/images/brand/logo.png"
+          alt="Kallos Gorgon Logo"
+          width={677}
+          height={369}
+          priority
+        />
       </Link>
-      <Link href="/" className="nav-wordmark">KALLOS GORGON</Link>
+
+      {/* Brand Name */}
+      <Link href="/" className="nav-wordmark">
+        KALLOS GORGON
+      </Link>
+
+      {/* Navigation Links */}
       <div className="nav-links">
-        <Link href="/#shop" className="nav-collection">Collection</Link>
-        <Link href="/checkout">Cart ({items.length})</Link>
+        <Link href="/#shop" className="nav-collection">
+          Collection
+        </Link>
+
+        <Link href="/checkout">
+          Cart ({items.length})
+        </Link>
+
+        {/* Login Button */}
+        <Link href="/login" className="nav-login">
+          Login
+        </Link>
       </div>
     </nav>
   );
