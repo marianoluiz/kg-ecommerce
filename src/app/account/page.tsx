@@ -13,13 +13,26 @@ export default async function AccountPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  // Abandoned checkouts (pending/failed) are hidden from the customer.
-  const { data: orders } = await createAdminClient()
-    .from("orders")
-    .select("id, order_number, status, total, created_at, order_items(product_name, size, quantity)")
-    .eq("user_id", user.id)
-    .not("status", "in", "(pending,failed)")
-    .order("created_at", { ascending: false });
+  const admin = createAdminClient();
+  const ordersQuery = () =>
+    admin
+      .from("orders")
+      .select("id, order_number, status, total, created_at, order_items(product_name, size, quantity)")
+      // Abandoned checkouts (pending/failed) are hidden from the customer.
+      .not("status", "in", "(pending,failed)");
+
+  // Guest orders placed with this email count too, but only once the user has proven they own it.
+  const { data: authUser } = await admin.auth.admin.getUserById(user.id);
+  const emailConfirmed = Boolean(authUser.user?.email_confirmed_at) && user.email !== "";
+
+  const [own, guest] = await Promise.all([
+    ordersQuery().eq("user_id", user.id),
+    emailConfirmed ? ordersQuery().is("user_id", null).eq("email", user.email.toLowerCase()) : null,
+  ]);
+
+  const orders = [...(own.data ?? []), ...(guest?.data ?? [])].sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
 
   return (
     <section className="checkout-section">

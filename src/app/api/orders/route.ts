@@ -25,7 +25,7 @@ export async function POST(request: Request) {
 
   const customer = {
     name: text(body.customer?.name, 120),
-    email: text(body.customer?.email, 200),
+    email: text(body.customer?.email, 200).toLowerCase(),
     phone: text(body.customer?.phone, 40),
     address: text(body.customer?.address, 500),
   };
