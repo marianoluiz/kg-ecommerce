@@ -5,12 +5,9 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import type { Product } from "@/data/products";
+import { SIZES, totalStock, type Product, type Size } from "@/data/products";
 import { formatPeso } from "@/lib/format";
 import { useCart } from "./CartProvider";
-
-const SIZES = ["XS", "S", "M", "L", "XL"] as const;
-type Size = (typeof SIZES)[number];
 
 export function ProductCard({ product }: { product: Product }) {
   const router = useRouter();
@@ -18,6 +15,15 @@ export function ProductCard({ product }: { product: Product }) {
 
   const [isOpen, setIsOpen] = useState(false);
   const [selectedSize, setSelectedSize] = useState<Size | null>(null);
+  const total = totalStock(product);
+  const soldOut = total <= 0;
+  const stockLabel = soldOut ? "Out of stock" : `${total} in stock`;
+  const sizeStock = (size: Size) => product.stockBySize[size] ?? 0;
+  const modalStockLabel = selectedSize
+    ? sizeStock(selectedSize) > 0
+      ? `Size ${selectedSize}: ${sizeStock(selectedSize)} in stock`
+      : `Size ${selectedSize}: Out of stock`
+    : stockLabel;
 
   useEffect(() => {
     if (!isOpen) return;
@@ -45,13 +51,7 @@ export function ProductCard({ product }: { product: Product }) {
   function addSelectedProduct() {
     if (!selectedSize) return false;
 
-    const sizedProduct: Product = {
-      ...product,
-      id: `${product.id}-size-${selectedSize.toLowerCase()}`,
-      name: `${product.name} (${selectedSize})`,
-    };
-
-    addItem(sizedProduct);
+    addItem(product, selectedSize);
     return true;
   }
 
@@ -100,6 +100,7 @@ export function ProductCard({ product }: { product: Product }) {
           <span className="product-price">
             {formatPeso(product.price)}
           </span>
+          <span className="product-stock">{stockLabel}</span>
         </div>
       </div>
 
@@ -146,6 +147,8 @@ export function ProductCard({ product }: { product: Product }) {
                   {formatPeso(product.price)}
                 </p>
 
+                <p className="kg-stock">{modalStockLabel}</p>
+
                 <div className="kg-size-section">
                   <p>SELECT SIZE</p>
 
@@ -160,6 +163,8 @@ export function ProductCard({ product }: { product: Product }) {
                             : "kg-size"
                         }
                         aria-pressed={selectedSize === size}
+                        disabled={sizeStock(size) <= 0}
+                        title={sizeStock(size) <= 0 ? "Out of stock" : `${sizeStock(size)} in stock`}
                         onClick={() => setSelectedSize(size)}
                       >
                         {size}
@@ -172,7 +177,7 @@ export function ProductCard({ product }: { product: Product }) {
                   <button
                     type="button"
                     className="kg-add-button"
-                    disabled={!selectedSize}
+                    disabled={!selectedSize || soldOut}
                     onClick={handleAddToCart}
                   >
                     ADD TO CART
@@ -181,14 +186,14 @@ export function ProductCard({ product }: { product: Product }) {
                   <button
                     type="button"
                     className="kg-buy-button"
-                    disabled={!selectedSize}
+                    disabled={!selectedSize || soldOut}
                     onClick={handleBuyNow}
                   >
                     BUY NOW
                   </button>
                 </div>
 
-                {!selectedSize && (
+                {!selectedSize && !soldOut && (
                   <p className="kg-size-hint">
                     Select a size to continue
                   </p>

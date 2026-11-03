@@ -5,8 +5,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useCart } from "./CartProvider";
 
-export function Nav() {
-  const { items } = useCart();
+export function Nav({ user }: { user: { isAdmin: boolean } | null }) {
+  const { count } = useCart();
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -41,12 +41,14 @@ export function Nav() {
         </Link>
 
         <Link href="/checkout">
-          Cart ({items.length})
+          Cart ({count})
         </Link>
 
-        {/* Login Button */}
-        <Link href="/login" className="nav-login">
-          Login
+        {user?.isAdmin && <Link href="/admin">Admin</Link>}
+
+        {/* Account / Login Button */}
+        <Link href={user ? "/account" : "/login"} className="nav-login">
+          {user ? "Account" : "Login"}
         </Link>
       </div>
     </nav>

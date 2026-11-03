@@ -99,6 +99,17 @@ button { font: inherit; color: inherit; }
 .checkout-btn { width: 100%; margin-top: 3rem; background: #fff; color: #000; border: none; padding: 1.5rem; }
 .checkout-btn:hover { background: #ddd; }
 .checkout-btn:disabled { opacity: 0.5; cursor: wait; }
+.qty-controls { display: flex; align-items: center; gap: 0.8rem; margin-top: 0.8rem; }
+.qty-controls button { background: transparent; border: 1px solid #333; color: #ccc; width: 1.8rem; height: 1.8rem; cursor: pointer; font-size: 0.8rem; }
+.qty-controls button:hover { border-color: #fff; color: #fff; }
+.qty-controls .qty-remove { width: auto; border: none; padding: 0; font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase; color: #666; text-decoration: underline; }
+.paypal-area { margin-top: 3rem; }
+.paypal-hint { font-size: 0.65rem; color: #777; text-transform: uppercase; letter-spacing: 0.08em; line-height: 1.6; margin-bottom: 1.5rem; }
+
+/* Order confirmation */
+.order-status { display: inline-block; margin-top: 1rem; padding: 0.4rem 1rem; border: 1px solid #333; font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; }
+.order-status.paid { border-color: #fff; color: #fff; }
+.order-meta { color: #888; font-size: 0.75rem; line-height: 2; letter-spacing: 0.05em; }
 
 /* Footer */
 .site-footer { background: #fff; color: #000; padding-top: 4rem; }
@@ -563,4 +574,81 @@ button { font: inherit; color: inherit; }
   .product-price {
     font-size: 9px;
   }
+}
+
+/* =========================================
+   STOCK
+   ========================================= */
+
+.product-info { flex-wrap: wrap; }
+.product-stock { flex-basis: 100%; font-size: 10px; color: #777; letter-spacing: 0.1em; text-transform: uppercase; }
+.kg-size:disabled { color: #555; border-color: #2a2a2a; text-decoration: line-through; cursor: not-allowed; }
+.kg-stock { margin: 6px 0 0; font-size: 12px; color: #888; letter-spacing: 0.12em; text-transform: uppercase; }
+
+/* =========================================
+   ACCOUNT
+   ========================================= */
+
+.account-container, .admin-container { max-width: 1100px; margin: 0 auto; }
+.account-header { display: flex; justify-content: space-between; align-items: flex-end; gap: 2rem; flex-wrap: wrap; }
+.account-actions { display: flex; gap: 1rem; }
+.account-section-title { font-family: var(--font-sans); font-size: 0.8rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 2rem; }
+.account-empty { color: #666; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; display: flex; flex-direction: column; align-items: flex-start; gap: 2rem; }
+.order-list { border-top: 1px solid #1a1a1a; }
+.order-row { display: grid; grid-template-columns: 1fr 2fr auto auto; gap: 2rem; align-items: center; padding: 1.5rem 0; border-bottom: 1px solid #1a1a1a; font-size: 0.75rem; letter-spacing: 0.05em; transition: background 0.3s; }
+.order-row:hover { background: #050505; }
+.order-row-number { display: block; font-weight: 600; letter-spacing: 0.1em; }
+.order-row-date { display: block; color: #666; margin-top: 0.4rem; }
+.order-row-items { display: flex; flex-direction: column; gap: 0.3rem; color: #aaa; text-transform: uppercase; }
+.order-row .order-status { margin-top: 0; }
+.order-row-total { font-weight: 500; min-width: 6rem; text-align: right; }
+
+/* =========================================
+   ADMIN
+   ========================================= */
+
+.admin-tabs { display: flex; gap: 2.5rem; margin-top: 2rem; }
+.admin-tabs a { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.15em; color: #666; padding-bottom: 0.5rem; border-bottom: 1px solid transparent; }
+.admin-tabs a.active { color: #fff; border-bottom-color: #fff; }
+.admin-message { border: 1px solid #333; padding: 1rem 1.5rem; margin-bottom: 2rem; font-size: 0.75rem; letter-spacing: 0.05em; }
+.admin-toolbar { display: flex; justify-content: space-between; margin-bottom: 2rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em; color: #888; }
+.admin-toolbar a { text-decoration: underline; }
+.admin-muted { color: #666; font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; }
+
+.admin-card { background: #050505; border: 1px solid #1a1a1a; padding: 1.5rem 2rem; margin-bottom: 1.5rem; }
+.admin-card header { display: flex; gap: 2rem; align-items: baseline; padding-bottom: 1rem; margin-bottom: 1rem; border-bottom: 1px solid #1a1a1a; font-size: 0.8rem; letter-spacing: 0.08em; }
+.admin-card header span { color: #777; }
+.admin-card header .admin-total { margin-left: auto; color: #fff; font-weight: 500; }
+.admin-card-body { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; font-size: 0.75rem; line-height: 1.8; color: #ccc; }
+.admin-card-body ul { list-style: none; text-transform: uppercase; letter-spacing: 0.05em; }
+
+.admin-card input, .admin-card select, .admin-card textarea { display: block; width: 100%; margin-top: 0.5rem; background: #000; border: 1px solid #333; color: #fff; padding: 0.7rem; font-family: var(--font-sans); font-size: 0.8rem; }
+.admin-card input[type="checkbox"] { display: inline; width: auto; margin: 0 0.5rem 0 0; accent-color: #fff; }
+.admin-card input[type="file"] { padding: 0.5rem; font-size: 0.7rem; }
+.admin-card label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.15em; color: #777; }
+.admin-card .btn { padding: 0.9rem 1.8rem; }
+
+.admin-inline-form { display: flex; gap: 1rem; align-items: center; margin-top: 1.5rem; }
+.admin-inline-form select { width: auto; margin-top: 0; }
+
+.admin-new-product h3 { font-family: var(--font-sans); font-size: 0.8rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 1.5rem; }
+.admin-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 2fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+.admin-wide { grid-column: 1 / -1; }
+.admin-span-2 { grid-column: span 2; }
+.admin-sizes { border: none; display: grid; grid-template-columns: repeat(5, minmax(3.5rem, 1fr)); gap: 0.5rem; min-width: 0; }
+.admin-new-product .admin-sizes { grid-column: 1 / -1; max-width: 520px; }
+.admin-sizes legend { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.15em; color: #777; margin-bottom: 0.5rem; }
+.admin-sizes input { padding: 0.5rem; }
+
+.admin-product-row { display: grid; grid-template-columns: 64px 1.4fr 0.8fr 3fr auto 1.3fr auto; gap: 1.5rem; align-items: center; padding: 1rem 1.5rem; margin-bottom: 0.75rem; }
+.admin-thumb { width: 64px; height: 80px; object-fit: cover; background: #111; }
+.admin-product-name { display: flex; flex-direction: column; gap: 0.4rem; font-size: 0.8rem; letter-spacing: 0.05em; }
+.admin-check { display: flex; align-items: center; white-space: nowrap; }
+
+@media (max-width: 900px) {
+  .order-row { grid-template-columns: 1fr auto; gap: 1rem; }
+  .order-row-items { grid-column: 1 / -1; grid-row: 2; }
+  .admin-card-body, .admin-grid { grid-template-columns: 1fr; }
+  .admin-product-row { grid-template-columns: 64px 1fr; }
+  .admin-product-row > :nth-child(n+4) { grid-column: 1 / -1; }
 }

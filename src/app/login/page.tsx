@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation";
+import { getCurrentUser } from "@/lib/auth";
 import { login, signup } from "./actions";
 
 export default async function LoginPage({
@@ -9,6 +11,7 @@ export default async function LoginPage({
   }>;
 }) {
   const params = await searchParams;
+  if (await getCurrentUser()) redirect("/account");
 
   return (
     <main

@@ -4,6 +4,7 @@ import { CartProvider } from "@/components/CartProvider";
 import { Footer } from "@/components/Footer";
 import { Nav } from "@/components/Nav";
 import { Toast } from "@/components/Toast";
+import { getCurrentUser } from "@/lib/auth";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], weight: ["300", "400", "500", "600"], variable: "--font-inter" });
@@ -14,12 +15,14 @@ export const metadata: Metadata = {
   description: "Climate-engineered high fashion for the Philippine tropics, powered by Quadros Technology™.",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const user = await getCurrentUser();
+
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
       <body>
         <CartProvider>
-          <Nav />
+          <Nav user={user ? { isAdmin: user.isAdmin } : null} />
           <main>{children}</main>
           <Footer />
           <Toast />
