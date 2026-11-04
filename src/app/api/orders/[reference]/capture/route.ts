@@ -29,6 +29,43 @@ export async function POST(
     return NextResponse.json({ error: "This order can no longer be paid." }, { status: 409 });
   }
 
+  // Re-check stock right before taking money: someone else may have bought the
+  // last unit while this buyer had the PayPal window open.
+  const { data: lines, error: linesError } = await admin
+    .from("order_items")
+    .select("product_id, size, quantity")
+    .eq("order_id", reference);
+  if (linesError || !lines?.length) {
+    console.error(`Order ${reference} items lookup failed:`, linesError);
+    return NextResponse.json({ error: "Payment could not be completed." }, { status: 500 });
+  }
+
+  const { data: variants, error: variantsError } = await admin
+    .from("product_variants")
+    .select("product_id, size, stock")
+    .in("product_id", [...new Set(lines.map((l) => l.product_id))]);
+  if (variantsError) {
+    console.error(`Order ${reference} stock lookup failed:`, variantsError);
+    return NextResponse.json({ error: "Payment could not be completed." }, { status: 500 });
+  }
+
+  const needed = new Map<string, number>();
+  for (const l of lines) {
+    const key = `${l.product_id}|${l.size}`;
+    needed.set(key, (needed.get(key) ?? 0) + l.quantity);
+  }
+  const soldOut = [...needed].some(([key, qty]) => {
+    const v = variants?.find((v) => `${v.product_id}|${v.size}` === key);
+    return (v?.stock ?? 0) < qty;
+  });
+  if (soldOut) {
+    await admin.from("orders").update({ status: "failed" }).eq("id", reference).eq("status", "pending");
+    return NextResponse.json(
+      { error: "Sorry, an item in your cart just sold out. You have not been charged." },
+      { status: 409 }
+    );
+  }
+
   const { ok, data } = await capturePayPalOrder(order.paypal_order_id);
 
   if (!ok) {

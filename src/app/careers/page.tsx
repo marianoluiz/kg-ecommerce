@@ -13,7 +13,7 @@ export default function CareersPage() {
         { heading: "Design & Product", body: <p>Fashion designers, pattern makers and textile specialists who care about fit, fabric and function.</p> },
         { heading: "Technology", body: <p>Developers and designers who want to craft a refined digital storefront experience.</p> },
         { heading: "Operations", body: <p>Logistics, customer care and retail partners who keep every order running smoothly.</p> },
-        { heading: "Stay In Touch", body: <p>Subscribe to our newsletter in the footer to hear first when a matching role opens.</p> },
+        { heading: "Stay In Touch", body: <p>Openings will be announced here on this page. Check back for future opportunities.</p> },
       ]}
       cta={{ href: "/#about", label: "Meet Group 5" }}
     />

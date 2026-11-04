@@ -14,11 +14,9 @@ export function Footer() {
     <>
       <footer className="site-footer">
         <div className="footer-top">
-          <div className="footer-col">
-            <form className="newsletter-form" onSubmit={(e) => e.preventDefault()}>
-              <input type="email" placeholder="Insert your e-mail address *" aria-label="Email address" />
-              <button type="submit" aria-label="Subscribe">→</button>
-            </form>
+          <div className="footer-col footer-brand">
+            <h4>Kallos Gorgon</h4>
+            <p>Climate-engineered high fashion for the Philippine tropics, powered by Quadros Technology™.</p>
           </div>
 
           <div className="footer-col">

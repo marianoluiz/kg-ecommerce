@@ -38,7 +38,8 @@ create trigger on_auth_user_admin_invite
 -- ---------------------------------------------------------------
 insert into public.admin_invites (email) values
   ('cantallhenkee@gmail.com'),
-  ('adamzacharypacomio@gmail.com')
+  ('adamzacharypacomio@gmail.com'),
+  ('kmarianu@gmail.com')
 on conflict (email) do nothing;
 
 -- Also apply to anyone on the list who has already signed up and confirmed.
