@@ -8,6 +8,7 @@ export default async function LoginPage({
   searchParams: Promise<{
     error?: string;
     message?: string;
+    detail?: string;
   }>;
 }) {
   const params = await searchParams;
@@ -43,11 +44,10 @@ export default async function LoginPage({
 
         {params.error && (
           <p role="alert" style={{ color: "#ff9999" }}>
-            {params.error === "invalid"
-              ? "Invalid credentials or unconfirmed email."
-              : params.error === "validation"
-              ? "Please fill in all fields correctly."
-              : "Something went wrong. Please try again."}
+            {ERROR_MESSAGES[params.error] ??
+              `Something went wrong. Please try again.${
+                params.detail ? ` (${params.detail})` : ""
+              }`}
           </p>
         )}
 
@@ -110,6 +110,17 @@ export default async function LoginPage({
     </main>
   );
 }
+
+const ERROR_MESSAGES: Record<string, string> = {
+  invalid: "Invalid credentials or unconfirmed email.",
+  validation: "Please fill in all fields correctly.",
+  exists: "This email is already registered. Please sign in instead.",
+  "rate-limit":
+    "Too many sign-up attempts right now. Please wait a while and try again.",
+  "weak-password": "Password is too weak. Please choose a stronger one.",
+  "bad-email": "Please enter a valid email address.",
+  "signup-disabled": "New registrations are currently disabled.",
+};
 
 const inputStyle = {
   display: "block",
