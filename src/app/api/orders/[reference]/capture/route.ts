@@ -1,6 +1,8 @@
+import { revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 import { capturePayPalOrder } from "@/lib/paypal";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { PRODUCTS_TAG } from "@/lib/products";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -57,6 +59,9 @@ export async function POST(
   if (error) {
     // Money was captured; log loudly so it can be fixed by hand.
     console.error(`Order ${reference} captured (${capture.id}) but not marked paid:`, error);
+  } else {
+    // Paying reduces stock, so refresh the cached catalog.
+    revalidateTag(PRODUCTS_TAG, { expire: 0 });
   }
 
   return NextResponse.json({ status: "paid", reference });

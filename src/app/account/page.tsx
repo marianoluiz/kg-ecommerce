@@ -22,12 +22,13 @@ export default async function AccountPage() {
       .not("status", "in", "(pending,failed)");
 
   // Guest orders placed with this email count too, but only once the user has proven they own it.
-  const { data: authUser } = await admin.auth.admin.getUserById(user.id);
-  const emailConfirmed = Boolean(authUser.user?.email_confirmed_at) && user.email !== "";
-
   const [own, guest] = await Promise.all([
     ordersQuery().eq("user_id", user.id),
-    emailConfirmed ? ordersQuery().is("user_id", null).eq("email", user.email.toLowerCase()) : null,
+    admin.auth.admin.getUserById(user.id).then(({ data: authUser }) =>
+      authUser.user?.email_confirmed_at && user.email !== ""
+        ? ordersQuery().is("user_id", null).eq("email", user.email.toLowerCase())
+        : null
+    ),
   ]);
 
   const orders = [...(own.data ?? []), ...(guest?.data ?? [])].sort(

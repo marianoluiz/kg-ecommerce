@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { cache } from "react";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -9,7 +10,8 @@ export type CurrentUser = {
   isAdmin: boolean;
 };
 
-export async function getCurrentUser(): Promise<CurrentUser | null> {
+// cache(): the root layout and the page both ask for the user; hit Supabase once per request.
+export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
   const claims = data?.claims;
@@ -27,7 +29,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     fullName: profile?.full_name ?? (claims.user_metadata?.full_name as string | undefined) ?? null,
     isAdmin: profile?.role === "admin",
   };
-}
+});
 
 export async function requireAdmin() {
   const user = await getCurrentUser();

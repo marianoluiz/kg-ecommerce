@@ -15,99 +15,56 @@ export default async function LoginPage({
   if (await getCurrentUser()) redirect("/account");
 
   return (
-    <main
-      style={{
-        minHeight: "85vh",
-        background: "#000",
-        color: "#fff",
-        padding: "120px 20px 70px",
-      }}
-    >
-      <div style={{ maxWidth: 420, margin: "auto" }}>
-        <p
-          style={{
-            textAlign: "center",
-            margin: "0 0 40px",
-            letterSpacing: 2,
-            fontSize: 16,
-          }}
-        >
-          CUSTOMER ACCOUNT
-        </p>
+    <section className="login-page">
+      <div className="login-box">
+        <p className="login-eyebrow">CUSTOMER ACCOUNT</p>
 
         {params.message === "check-email" && (
-          <p role="status">
-            Registration received. Check your email
-            for a confirmation link.
-          </p>
+          <div className="login-notice" role="status">
+            <strong>Almost there</strong>
+            We sent a confirmation link to your email. Open it to activate your account, then sign in below.
+          </div>
+        )}
+
+        {params.message === "confirmed" && (
+          <div className="login-notice" role="status">
+            <strong>Email confirmed</strong>
+            Your account is active. Please sign in below.
+          </div>
         )}
 
         {params.error && (
-          <p role="alert" style={{ color: "#ff9999" }}>
+          <div className="login-notice error" role="alert">
             {ERROR_MESSAGES[params.error] ??
-              `Something went wrong. Please try again.${
-                params.detail ? ` (${params.detail})` : ""
-              }`}
-          </p>
+              `Something went wrong. Please try again.${params.detail ? ` (${params.detail})` : ""}`}
+          </div>
         )}
 
         <form action={login}>
           <h2>LOGIN</h2>
-          <input
-            name="email"
-            type="email"
-            placeholder="Email address"
-            required
-            style={inputStyle}
-          />
-          <input
-            name="password"
-            type="password"
-            placeholder="Password"
-            required
-            style={inputStyle}
-          />
-          <button type="submit" style={buttonStyle}>
-            SIGN IN
-          </button>
+          <input name="email" type="email" placeholder="Email address" autoComplete="email" required />
+          <input name="password" type="password" placeholder="Password" autoComplete="current-password" required />
+          <button type="submit">SIGN IN</button>
         </form>
 
-        <hr
-          style={{
-            margin: "40px 0",
-            borderColor: "#444",
-          }}
-        />
+        <hr />
 
         <form action={signup}>
           <h2>CREATE AN ACCOUNT</h2>
-          <input
-            name="full_name"
-            placeholder="Full name"
-            required
-            style={inputStyle}
-          />
-          <input
-            name="email"
-            type="email"
-            placeholder="Email address"
-            required
-            style={inputStyle}
-          />
+          <input name="full_name" placeholder="Full name" autoComplete="name" required />
+          <input name="email" type="email" placeholder="Email address" autoComplete="email" required />
           <input
             name="password"
             type="password"
             placeholder="Password (8 characters minimum)"
+            autoComplete="new-password"
             minLength={8}
             required
-            style={inputStyle}
           />
-          <button type="submit" style={buttonStyle}>
-            REGISTER
-          </button>
+          <button type="submit">REGISTER</button>
         </form>
       </div>
-    </main>
+    </section>
   );
 }
 
@@ -115,30 +72,8 @@ const ERROR_MESSAGES: Record<string, string> = {
   invalid: "Invalid credentials or unconfirmed email.",
   validation: "Please fill in all fields correctly.",
   exists: "This email is already registered. Please sign in instead.",
-  "rate-limit":
-    "Too many sign-up attempts right now. Please wait a while and try again.",
+  "rate-limit": "Too many sign-up attempts right now. Please wait a while and try again.",
   "weak-password": "Password is too weak. Please choose a stronger one.",
   "bad-email": "Please enter a valid email address.",
   "signup-disabled": "New registrations are currently disabled.",
-};
-
-const inputStyle = {
-  display: "block",
-  width: "100%",
-  padding: 14,
-  marginTop: 14,
-  background: "#111",
-  color: "#fff",
-  border: "1px solid #555",
-};
-
-const buttonStyle = {
-  width: "100%",
-  marginTop: 20,
-  padding: 15,
-  background: "#fff",
-  color: "#000",
-  border: "none",
-  cursor: "pointer",
-  fontWeight: 700 as const,
 };

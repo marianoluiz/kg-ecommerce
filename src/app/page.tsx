@@ -1,37 +1,31 @@
+import { Suspense } from "react";
 import { BrandDetails } from "@/components/BrandDetails";
 import { GroupSection } from "@/components/GroupSection";
 import { Hero } from "@/components/Hero";
 import { ProductGrid } from "@/components/ProductGrid";
+import { ProductGridSkeleton } from "@/components/Skeletons";
 import { PromoBanner } from "@/components/PromoBanner";
-import type { Product } from "@/data/products";
-import { createClient } from "@/lib/supabase/server";
+import { getActiveProducts } from "@/lib/products";
 
-export default async function HomePage() {
-  const supabase = await createClient();
+async function Products() {
+  try {
+    return <ProductGrid products={await getActiveProducts()} />;
+  } catch (error) {
+    console.error(error);
+    return <ProductGrid products={[]} />;
+  }
+}
 
-  const { data, error } = await supabase
-    .from("products")
-    .select("id, name, price, image_url, product_variants(size, stock)")
-    .eq("is_active", true)
-    .order("id");
-
-  if (error) console.error(error);
-
-  const products: Product[] = (data ?? []).map((p) => ({
-    id: String(p.id),
-    name: p.name,
-    price: Number(p.price),
-    stockBySize: Object.fromEntries(p.product_variants.map((v) => [v.size, v.stock])),
-    image: p.image_url,
-    alt: p.name,
-  }));
-
+export default function HomePage() {
   return (
     <>
       <Hero />
       <PromoBanner />
       <BrandDetails />
-      <ProductGrid products={products} />
+      {/* The hero renders immediately; products stream in behind a skeleton. */}
+      <Suspense fallback={<ProductGridSkeleton />}>
+        <Products />
+      </Suspense>
       <GroupSection />
     </>
   );

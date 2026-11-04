@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { ScrollToShopButton } from "./ScrollToShopButton";
+import Link from "next/link";
 
 export function PromoBanner() {
   return (
@@ -9,7 +9,7 @@ export function PromoBanner() {
       <div className="promo-content">
         <h2>Quadros Technology™</h2>
         <p>A new chapter in functional apparel, where climate-engineered cotton and polyester matrices are given absolute priority.</p>
-        <ScrollToShopButton className="discover-link">DISCOVER</ScrollToShopButton>
+        <Link href="/quadros" className="discover-link">DISCOVER</Link>
       </div>
     </section>
   );

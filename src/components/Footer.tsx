@@ -19,21 +19,16 @@ export function Footer() {
               <input type="email" placeholder="Insert your e-mail address *" aria-label="Email address" />
               <button type="submit" aria-label="Subscribe">→</button>
             </form>
-            <div className="social-icons">
-              {["f", "𝕏", "ig", "yt", "sp", "dc", "tk"].map((s) => (
-                <span key={s}>{s}</span>
-              ))}
-            </div>
           </div>
 
           <div className="footer-col">
             <h4>Company</h4>
             <ul>
               <li><Link href="/#about">About Group 5</Link></li>
-              <li><a href="#">The Kallos Gorgon Ethos</a></li>
-              <li><a href="#">Quadros Technology™</a></li>
-              <li><a href="#">Sustainability</a></li>
-              <li><a href="#">Careers</a></li>
+              <li><Link href="/ethos">The Kallos Gorgon Ethos</Link></li>
+              <li><Link href="/quadros">Quadros Technology™</Link></li>
+              <li><Link href="/sustainability">Sustainability</Link></li>
+              <li><Link href="/careers">Careers</Link></li>
             </ul>
           </div>
 
@@ -43,8 +38,8 @@ export function Footer() {
               <li><button type="button" onClick={() => setOpenModal("legal")}>E-Commerce Act (R.A. 8792)</button></li>
               <li><button type="button" onClick={() => setOpenModal("legal")}>Consumer Protection (R.A. 7394)</button></li>
               <li><button type="button" onClick={() => setOpenModal("privacy")}>Cyber Security &amp; Privacy</button></li>
-              <li><a href="#">Cookie Policy</a></li>
-              <li><a href="#">Sitemap</a></li>
+              <li><Link href="/cookies">Cookie Policy</Link></li>
+              <li><Link href="/sitemap">Sitemap</Link></li>
             </ul>
           </div>
         </div>
@@ -52,8 +47,8 @@ export function Footer() {
         <div className="footer-bottom">
           <div className="footer-copy">© 2026 KALLOS GORGON. GROUP 5 CISTM CAPSTONE.</div>
           <div className="footer-utils">
-            <span>📍 STORE LOCATOR</span>
-            <span>🌐 LOCATION: MANILA, PHILIPPINES / ENGLISH</span>
+            <Link href="/stores">📍 STORE LOCATOR</Link>
+            <span className="footer-location">🌐 LOCATION: MANILA, PHILIPPINES / ENGLISH</span>
           </div>
         </div>
       </footer>

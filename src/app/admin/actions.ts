@@ -1,11 +1,12 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { SIZES, type Size } from "@/data/products";
 import { ORDER_STATUSES } from "@/lib/orders";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { PRODUCTS_TAG } from "@/lib/products";
 
 const BUCKET = "product-images";
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
@@ -43,6 +44,8 @@ async function saveSizeStock(productId: number, stock: Record<Size, number>) {
 }
 
 function done(tab: string, message: string): never {
+  // expire: 0 so the shop shows admin edits on the very next load.
+  if (tab === "products") revalidateTag(PRODUCTS_TAG, { expire: 0 });
   revalidatePath("/", "layout");
   redirect(`/admin?tab=${tab}&message=${encodeURIComponent(message)}`);
 }
