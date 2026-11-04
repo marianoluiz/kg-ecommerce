@@ -1,13 +1,15 @@
 import { NextResponse, type NextRequest } from "next/server";
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
+import { getOrigin } from "@/lib/site-url";
 
 // Handles the link in Supabase auth emails and signs the user in.
 // Supports both link styles:
 //   ?token_hash=...&type=email  (works even if opened in another browser)
 //   ?code=...                   (default {{ .ConfirmationURL }} PKCE flow)
 export async function GET(request: NextRequest) {
-  const { searchParams, origin } = new URL(request.url);
+  const { searchParams } = new URL(request.url);
+  const origin = await getOrigin();
   const tokenHash = searchParams.get("token_hash");
   const type = searchParams.get("type") as EmailOtpType | null;
   const code = searchParams.get("code");

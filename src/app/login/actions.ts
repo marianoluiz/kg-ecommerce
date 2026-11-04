@@ -2,15 +2,8 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
-
-async function getOrigin() {
-  const h = await headers();
-  const host = h.get("x-forwarded-host") ?? h.get("host");
-  const proto = h.get("x-forwarded-proto") ?? "https";
-  return host ? `${proto}://${host}` : "https://kallosgorgon.netlify.app";
-}
+import { getOrigin } from "@/lib/site-url";
 
 export async function signup(formData: FormData) {
   const fullName = String(formData.get("full_name") || "").trim();
