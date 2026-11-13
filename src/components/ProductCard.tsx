@@ -5,9 +5,20 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { SIZES, totalStock, type Product, type Size } from "@/data/products";
+import { SIZES, currentPrice, isOnSale, totalStock, type Product, type Size } from "@/data/products";
 import { formatPeso } from "@/lib/format";
 import { useCart } from "./CartProvider";
+
+// Regular price struck through, sale price next to it. Plain price when not on sale.
+function PriceTag({ product }: { product: Product }) {
+  if (!isOnSale(product)) return <>{formatPeso(product.price)}</>;
+  return (
+    <>
+      <s className="price-old">{formatPeso(product.price)}</s>{" "}
+      <span className="price-sale">{formatPeso(currentPrice(product))}</span>
+    </>
+  );
+}
 
 export function ProductCard({ product }: { product: Product }) {
   const router = useRouter();
@@ -91,14 +102,14 @@ export function ProductCard({ product }: { product: Product }) {
           />
 
           <div className="add-to-cart">
-            QUICK VIEW - {formatPeso(product.price)}
+            QUICK VIEW - {formatPeso(currentPrice(product))}
           </div>
         </div>
 
         <div className="product-info">
           <span className="product-name">{product.name}</span>
           <span className="product-price">
-            {formatPeso(product.price)}
+            <PriceTag product={product} />
           </span>
           <span className="product-stock">{stockLabel}</span>
         </div>
@@ -144,10 +155,12 @@ export function ProductCard({ product }: { product: Product }) {
                 <h2>{product.name}</h2>
 
                 <p className="kg-price">
-                  {formatPeso(product.price)}
+                  <PriceTag product={product} />
                 </p>
 
                 <p className="kg-stock">{modalStockLabel}</p>
+
+                {product.description && <p className="kg-description">{product.description}</p>}
 
                 <div className="kg-size-section">
                   <p>SELECT SIZE</p>

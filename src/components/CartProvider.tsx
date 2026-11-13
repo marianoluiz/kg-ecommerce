@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import type { Product, Size } from "@/data/products";
+import { currentPrice, type Product, type Size } from "@/data/products";
 
 export type CartItem = {
   productId: string;
@@ -73,7 +73,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         }
         return [
           ...prev,
-          { productId: product.id, name: product.name, size, price: product.price, image: product.image, quantity: 1 },
+          { productId: product.id, name: product.name, size, price: currentPrice(product), image: product.image, quantity: 1 },
         ];
       });
       showToast(`${product.name} (${size}) added.`);
