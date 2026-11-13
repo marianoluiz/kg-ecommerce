@@ -738,7 +738,7 @@ button { font: inherit; color: inherit; }
   .checkout-header { border-color: #000; }
   .checkout-header h2, .checkout-header p, .order-meta, .order-summary, .order-summary h3,
   .summary-item, .summary-item .unit-price, .total-line { color: #000 !important; }
-  .order-summary { background: #fff; border-color: #000; padding: 1.5rem 0; margin-top: 2rem; }
+  .order-summary { background: #fff; border-color: #000; padding: 1.75rem 2rem; margin-top: 2rem; break-inside: avoid; }
   .summary-item, .order-summary h3 { border-color: #999; }
   .order-status, .order-status.paid { border-color: #000; color: #000; }
   .price-old { color: #555; }
