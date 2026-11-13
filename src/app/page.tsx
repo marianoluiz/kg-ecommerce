@@ -1,6 +1,5 @@
 import { Suspense } from "react";
 import { BrandDetails } from "@/components/BrandDetails";
-import { GroupSection } from "@/components/GroupSection";
 import { Hero } from "@/components/Hero";
 import { ProductGrid } from "@/components/ProductGrid";
 import { ProductGridSkeleton } from "@/components/Skeletons";
@@ -26,7 +25,6 @@ export default function HomePage() {
       </Suspense>
       <BrandDetails />
       <PromoBanner />
-      <GroupSection />
     </>
   );
 }

@@ -68,7 +68,7 @@ button { font: inherit; color: inherit; }
 .product-image-container:hover .add-to-cart { transform: translateY(0); }
 
 /* Group section */
-.group-section { padding: 6rem 4rem 8rem; border-top: 1px solid #1a1a1a; }
+.group-section { min-height: 60vh; padding: 8rem 4rem 8rem; border-top: 1px solid #1a1a1a; }
 .group-container { max-width: 900px; margin: 0 auto; }
 .group-container h2 { font-size: 2.2rem; margin-bottom: 1.5rem; }
 .group-container p { font-size: 0.9rem; line-height: 1.8; color: #999; margin-bottom: 3rem; font-weight: 300; }

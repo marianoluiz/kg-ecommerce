@@ -15,7 +15,7 @@ export default function CareersPage() {
         { heading: "Operations", body: <p>Logistics, customer care and retail partners who keep every order running smoothly.</p> },
         { heading: "Stay In Touch", body: <p>Openings will be announced here on this page. Check back for future opportunities.</p> },
       ]}
-      cta={{ href: "/#about", label: "Meet Group 5" }}
+      cta={{ href: "/about", label: "Meet Group 5" }}
     />
   );
 }

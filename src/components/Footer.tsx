@@ -22,7 +22,7 @@ export function Footer() {
           <div className="footer-col">
             <h4>Company</h4>
             <ul>
-              <li><Link href="/#about">About Group 5</Link></li>
+              <li><Link href="/about">About Group 5</Link></li>
               <li><Link href="/ethos">The Kallos Gorgon Ethos</Link></li>
               <li><Link href="/quadros">Quadros Technology™</Link></li>
               <li><Link href="/sustainability">Sustainability</Link></li>
