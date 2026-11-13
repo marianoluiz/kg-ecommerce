@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ConfirmForm, SubmitButton } from "@/components/FormControls";
 import { logout } from "@/app/login/actions";
 import { getCurrentUser } from "@/lib/auth";
 import { formatPeso } from "@/lib/format";
@@ -49,11 +50,9 @@ export default async function AccountPage() {
                 Admin Panel
               </Link>
             )}
-            <form action={logout}>
-              <button type="submit" className="btn">
-                Log Out
-              </button>
-            </form>
+            <ConfirmForm action={logout} title="Log out?" message="You will need to sign in again to see your orders." confirmLabel="Log Out">
+              <SubmitButton pendingLabel="Logging out…">Log Out</SubmitButton>
+            </ConfirmForm>
           </div>
         </div>
 

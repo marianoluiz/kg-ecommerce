@@ -6,6 +6,8 @@ import { useRef, useState } from "react";
 import { formatPeso } from "@/lib/format";
 import type { PaymentMethod } from "@/lib/orders";
 import { useCart } from "./CartProvider";
+import { Spinner } from "./FormControls";
+import { Modal } from "./Modal";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -16,6 +18,7 @@ export function CheckoutView() {
   const [agreedEcommerce, setAgreedEcommerce] = useState(false);
   const [agreedConsumer, setAgreedConsumer] = useState(false);
   const [processing, setProcessing] = useState(false);
+  const [confirmCod, setConfirmCod] = useState(false);
   const [method, setMethod] = useState<PaymentMethod>("paypal");
 
   // PayPal callbacks can outlive a render; read the latest values through refs.
@@ -53,6 +56,7 @@ export function CheckoutView() {
 
   async function placeCodOrder() {
     if (!canPay) return;
+    setConfirmCod(false);
     setProcessing(true);
     try {
       const { customer, items } = latest.current;
@@ -167,7 +171,11 @@ export function CheckoutView() {
           </div>
 
           <div className="paypal-area">
-            {processing && <p className="paypal-hint">{method === "cod" ? "Placing your order…" : "Confirming payment…"}</p>}
+            {processing && (
+              <p className="paypal-hint paypal-hint-busy" role="status">
+                <Spinner /> {method === "cod" ? "Placing your order…" : "Confirming payment…"}
+              </p>
+            )}
             {!canPay && !processing && items.length > 0 && (
               <p className="paypal-hint">
                 {method === "cod"
@@ -176,8 +184,14 @@ export function CheckoutView() {
               </p>
             )}
             {method === "cod" ? (
-              <button type="button" className="btn checkout-btn cod-btn" style={{ marginTop: 0 }} disabled={!canPay} onClick={placeCodOrder}>
-                Place Order · Pay {formatPeso(total)} on Delivery
+              <button type="button" className="btn checkout-btn cod-btn" style={{ marginTop: 0 }} disabled={!canPay} onClick={() => setConfirmCod(true)}>
+                {processing ? (
+                  <>
+                    <Spinner /> Placing order…
+                  </>
+                ) : (
+                  <>Place Order · Pay {formatPeso(total)} on Delivery</>
+                )}
               </button>
             ) : (
               <PayPalProvider
@@ -202,6 +216,22 @@ export function CheckoutView() {
           </div>
         </div>
       </div>
+
+      <Modal open={confirmCod} title="Place your order?" onClose={() => setConfirmCod(false)}>
+        <p>You will pay {formatPeso(total)} in cash when your order arrives at {customer.address || "your address"}. We will reserve your items right away.</p>
+        <div className="confirm-actions">
+          <button type="button" className="btn" onClick={() => setConfirmCod(false)}>Review Order</button>
+          <button type="button" className="btn btn-solid" onClick={placeCodOrder}>Place Order</button>
+        </div>
+      </Modal>
+
+      {processing && (
+        <div className="processing-overlay" role="alert" aria-live="assertive">
+          <Spinner />
+          <p>{method === "cod" ? "Placing your order…" : "Confirming your payment…"}</p>
+          <span>Please don&apos;t close this page.</span>
+        </div>
+      )}
     </section>
   );
 }

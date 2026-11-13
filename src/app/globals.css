@@ -680,7 +680,7 @@ button { font: inherit; color: inherit; }
 .login-notice.error { border-color: #5a2a2a; color: #ff9999; }
 .login-box h2 { margin-bottom: 0.5rem; }
 .login-box input { display: block; width: 100%; padding: 14px; margin-top: 14px; background: #111; color: #fff; border: 1px solid #555; font: inherit; }
-.login-box button { width: 100%; margin-top: 20px; padding: 15px; background: #fff; color: #000; border: none; cursor: pointer; font-weight: 700; }
+.login-box button.login-submit, .login-box button { width: 100%; margin-top: 20px; padding: 15px; background: #fff; color: #000; border: none; cursor: pointer; font-weight: 700; }
 .login-box hr { margin: 40px 0; border: 0; border-top: 1px solid #444; }
 
 /* Info pages (ethos, quadros, sustainability, careers, cookies, sitemap, stores) */
@@ -744,3 +744,26 @@ button { font: inherit; color: inherit; }
   .price-old { color: #555; }
   @page { margin: 16mm; }
 }
+
+/* Loading + confirmation UI */
+.spinner { display: inline-block; width: 0.95em; height: 0.95em; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: -0.15em; flex-shrink: 0; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.btn.is-pending, .login-box button.is-pending { display: inline-flex; align-items: center; justify-content: center; gap: 0.7rem; opacity: 0.75; cursor: progress; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn.is-pending:hover { background: transparent; color: #fff; }
+.login-box button.login-submit { display: flex; align-items: center; justify-content: center; gap: 0.7rem; }
+.login-box button.login-submit.is-pending:hover { color: #000; }
+.login-box button:disabled { opacity: 0.7; cursor: progress; }
+.cod-btn:disabled { cursor: not-allowed; }
+.btn-solid { background: #fff; color: #000; }
+.btn-solid:hover { background: #ddd; color: #000; }
+.confirm-actions { display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem; flex-wrap: wrap; }
+.confirm-actions .btn { padding: 1rem 2rem; }
+.modal-content { animation: modal-in 0.25s ease; }
+@keyframes modal-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+.paypal-hint-busy { display: flex; align-items: center; gap: 0.7rem; }
+.processing-overlay { position: fixed; inset: 0; z-index: 300; background: rgba(0, 0, 0, 0.88); backdrop-filter: blur(4px); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.2rem; text-align: center; }
+.processing-overlay .spinner { width: 2.4rem; height: 2.4rem; border-width: 3px; }
+.processing-overlay p { font-size: 0.85rem; letter-spacing: 0.15em; text-transform: uppercase; margin: 0; }
+.processing-overlay span { font-size: 0.7rem; color: #888; letter-spacing: 0.05em; }
+@media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 1.6s; } .modal-content { animation: none; } }

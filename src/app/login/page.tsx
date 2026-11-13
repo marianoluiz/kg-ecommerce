@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
+import { SubmitButton } from "@/components/FormControls";
 import { login, signup } from "./actions";
 
 export default async function LoginPage({
@@ -44,7 +45,7 @@ export default async function LoginPage({
           <h2>LOGIN</h2>
           <input name="email" type="email" placeholder="Email address" autoComplete="email" required />
           <input name="password" type="password" placeholder="Password" autoComplete="current-password" required />
-          <button type="submit">SIGN IN</button>
+          <SubmitButton className="login-submit" pendingLabel="SIGNING IN…">SIGN IN</SubmitButton>
         </form>
 
         <hr />
@@ -61,7 +62,7 @@ export default async function LoginPage({
             minLength={8}
             required
           />
-          <button type="submit">REGISTER</button>
+          <SubmitButton className="login-submit" pendingLabel="CREATING ACCOUNT…">REGISTER</SubmitButton>
         </form>
       </div>
     </section>

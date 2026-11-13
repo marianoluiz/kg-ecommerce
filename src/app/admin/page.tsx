@@ -5,6 +5,7 @@ import { requireAdmin } from "@/lib/auth";
 import { formatPeso } from "@/lib/format";
 import { formatOrderNumber, ORDER_STATUSES, PAYMENT_TEXT, statusText } from "@/lib/orders";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { ConfirmForm, SubmitButton } from "@/components/FormControls";
 import { createProduct, updateOrderStatus, updateProduct } from "./actions";
 
 export const metadata: Metadata = { title: "Admin | KALLOS GORGON" };
@@ -102,15 +103,21 @@ async function OrdersTab({ showAll }: { showAll: boolean }) {
                 </ul>
               </div>
 
-              <form action={updateOrderStatus} className="admin-inline-form">
+              <ConfirmForm
+                action={updateOrderStatus}
+                className="admin-inline-form"
+                title="Update order status?"
+                message={`Change ${formatOrderNumber(order.order_number)} to the selected status. Cancelling a Cash on Delivery order returns its stock to the shop.`}
+                confirmLabel="Update"
+              >
                 <input type="hidden" name="id" value={order.id} />
                 <select name="status" defaultValue={order.status} aria-label="Order status">
                   {ORDER_STATUSES.map((s) => (
                     <option key={s} value={s}>{statusText(s, order.payment_method)}</option>
                   ))}
                 </select>
-                <button type="submit" className="btn">Update</button>
-              </form>
+                <SubmitButton pendingLabel="Updating…">Update</SubmitButton>
+              </ConfirmForm>
             </article>
           ))}
         </div>
@@ -144,7 +151,13 @@ async function ProductsTab() {
 
   return (
     <>
-      <form action={createProduct} className="admin-card admin-new-product">
+      <ConfirmForm
+        action={createProduct}
+        className="admin-card admin-new-product"
+        title="Add this product?"
+        message="It will be listed in the shop right away."
+        confirmLabel="Add Product"
+      >
         <h3>Add New Product</h3>
         <div className="admin-grid">
           <label>Name<input name="name" required maxLength={120} /></label>
@@ -154,12 +167,19 @@ async function ProductsTab() {
           <SizeStockInputs />
           <label className="admin-wide">Product details (shown to customers)<textarea name="description" rows={4} maxLength={2000} placeholder="Fabric, fit, care, sizing notes…" /></label>
         </div>
-        <button type="submit" className="btn">Add Product</button>
-      </form>
+        <SubmitButton pendingLabel="Adding…">Add Product</SubmitButton>
+      </ConfirmForm>
 
       <div className="admin-products">
         {products?.map((product) => (
-          <form action={updateProduct} className="admin-card admin-product-row" key={product.id}>
+          <ConfirmForm
+            action={updateProduct}
+            className="admin-card admin-product-row"
+            key={product.id}
+            title="Save changes?"
+            message={`Update ${product.name}. Changes to price, stock and visibility go live in the shop immediately.`}
+            confirmLabel="Save"
+          >
             <input type="hidden" name="id" value={product.id} />
             {product.image_url ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -183,9 +203,9 @@ async function ProductsTab() {
               <input name="is_active" type="checkbox" defaultChecked={product.is_active} /> Listed in shop
             </label>
             <label>New image<input name="image" type="file" accept="image/png,image/jpeg,image/webp,image/avif" /></label>
-            <button type="submit" className="btn">Save</button>
+            <SubmitButton>Save</SubmitButton>
             <label className="admin-wide">Product details<textarea name="description" rows={3} maxLength={2000} defaultValue={product.description ?? ""} placeholder="Fabric, fit, care, sizing notes…" /></label>
-          </form>
+          </ConfirmForm>
         ))}
       </div>
     </>
