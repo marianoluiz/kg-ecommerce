@@ -635,7 +635,7 @@ button { font: inherit; color: inherit; }
 .admin-sizes legend { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.15em; color: #777; margin-bottom: 0.5rem; }
 .admin-sizes input { padding: 0.5rem; }
 
-.admin-product-row { display: grid; grid-template-columns: 64px 1.4fr 0.8fr 3fr auto 1.3fr auto; gap: 1.5rem; align-items: center; padding: 1rem 1.5rem; margin-bottom: 0.75rem; }
+.admin-product-row { display: grid; grid-template-columns: 64px 1.4fr 0.8fr 0.8fr 3fr auto 1.3fr auto; gap: 1.5rem; align-items: center; padding: 1rem 1.5rem; margin-bottom: 0.75rem; }
 .admin-thumb { width: 64px; height: 80px; object-fit: cover; background: #111; }
 .admin-product-name { display: flex; flex-direction: column; gap: 0.4rem; font-size: 0.8rem; letter-spacing: 0.05em; }
 .admin-check { display: flex; align-items: center; white-space: nowrap; }
@@ -703,4 +703,44 @@ button { font: inherit; color: inherit; }
   .info-page { padding: 9rem 1.5rem 5rem; }
   .info-header h1 { font-size: 2.2rem; }
   .info-sections { grid-template-columns: 1fr; gap: 2.5rem; }
+}
+
+/* ---------- Sale pricing ---------- */
+.price-old { color: #777; text-decoration: line-through; text-decoration-thickness: 1px; font-weight: 400; }
+.price-sale { color: #fff; font-weight: 600; }
+.kg-price .price-old { font-size: 0.6em; }
+
+/* ---------- Product details (modal) ---------- */
+.kg-description { margin: 14px 0 0; font-size: 13px; line-height: 1.7; color: #bbb; white-space: pre-line; max-height: 9rem; overflow-y: auto; }
+
+/* ---------- Payment method picker ---------- */
+.payment-methods { display: grid; gap: 0.75rem; margin-top: 2.5rem; border: none; }
+.payment-methods legend { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.15em; color: #777; margin-bottom: 1rem; }
+.payment-option { display: flex; gap: 1rem; align-items: flex-start; padding: 1rem 1.2rem; border: 1px solid #333; cursor: pointer; font-size: 0.75rem; letter-spacing: 0.05em; color: #ccc; }
+.payment-option.selected { border-color: #fff; color: #fff; }
+.payment-option input { margin-top: 0.15rem; accent-color: #fff; }
+.payment-option small { display: block; margin-top: 0.3rem; color: #777; font-size: 0.65rem; letter-spacing: 0.04em; }
+.cod-btn { width: 100%; }
+.cod-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ---------- Receipt ---------- */
+.receipt-actions { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 2rem; }
+.receipt-actions .btn { margin-top: 0; }
+.print-only { display: none; }
+.summary-item .unit-price { display: block; margin-top: 0.4rem; color: #666; font-size: 0.65rem; }
+
+@media print {
+  .site-nav, .site-footer, .toast, .no-print { display: none !important; }
+  .print-only { display: block; }
+  html, body { background: #fff !important; color: #000 !important; }
+  .checkout-section { padding: 0 !important; min-height: 0; }
+  .checkout-container { display: block; max-width: none; }
+  .checkout-header { border-color: #000; }
+  .checkout-header h2, .checkout-header p, .order-meta, .order-summary, .order-summary h3,
+  .summary-item, .summary-item .unit-price, .total-line { color: #000 !important; }
+  .order-summary { background: #fff; border-color: #000; padding: 1.5rem 0; margin-top: 2rem; }
+  .summary-item, .order-summary h3 { border-color: #999; }
+  .order-status, .order-status.paid { border-color: #000; color: #000; }
+  .price-old { color: #555; }
+  @page { margin: 16mm; }
 }

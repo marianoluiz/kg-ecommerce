@@ -18,7 +18,7 @@ export const getActiveProducts = unstable_cache(
 
     const { data, error } = await supabase
       .from("products")
-      .select("id, name, price, image_url, product_variants(size, stock)")
+      .select("id, name, price, sale_price, description, image_url, product_variants(size, stock)")
       .eq("is_active", true)
       .order("id");
 
@@ -29,6 +29,8 @@ export const getActiveProducts = unstable_cache(
       id: String(p.id),
       name: p.name,
       price: Number(p.price),
+      salePrice: p.sale_price == null ? null : Number(p.sale_price),
+      description: p.description,
       stockBySize: Object.fromEntries(p.product_variants.map((v) => [v.size, v.stock])),
       image: p.image_url,
       alt: p.name,

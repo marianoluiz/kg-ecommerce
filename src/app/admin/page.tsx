@@ -3,7 +3,7 @@ import Link from "next/link";
 import { SIZES } from "@/data/products";
 import { requireAdmin } from "@/lib/auth";
 import { formatPeso } from "@/lib/format";
-import { formatOrderNumber, ORDER_STATUSES, STATUS_TEXT } from "@/lib/orders";
+import { formatOrderNumber, ORDER_STATUSES, PAYMENT_TEXT, statusText } from "@/lib/orders";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createProduct, updateOrderStatus, updateProduct } from "./actions";
 
@@ -42,18 +42,23 @@ export default async function AdminPage({
 async function OrdersTab({ showAll }: { showAll: boolean }) {
   let query = createAdminClient()
     .from("orders")
-    .select("id, order_number, status, total, customer_name, email, phone, shipping_address, paypal_capture_id, created_at, order_items(product_name, size, quantity, unit_price)")
+    .select("id, order_number, status, payment_method, total, customer_name, email, phone, shipping_address, paypal_capture_id, created_at, order_items(product_name, size, quantity, unit_price)")
     .order("created_at", { ascending: false })
     .limit(200);
 
-  // Unpaid checkouts are noise; hide them unless asked.
-  if (!showAll) query = query.not("status", "in", "(pending,failed)");
+  // Unpaid PayPal checkouts are noise; hide them unless asked. COD orders are real orders, so they always show.
+  if (!showAll) query = query.or("payment_method.eq.cod,status.not.in.(pending,failed)");
 
   const { data: orders, error } = await query;
   if (error) return <p className="admin-message">Could not load orders: {error.message}</p>;
 
+  // PayPal money is in once paid; COD money is only in once delivered.
   const revenue = (orders ?? [])
-    .filter((o) => o.status !== "pending" && o.status !== "failed" && o.status !== "cancelled")
+    .filter((o) =>
+      o.payment_method === "cod"
+        ? o.status === "delivered"
+        : o.status === "paid" || o.status === "shipped" || o.status === "delivered"
+    )
     .reduce((sum, o) => sum + Number(o.total), 0);
 
   return (
@@ -82,7 +87,11 @@ async function OrdersTab({ showAll }: { showAll: boolean }) {
                   <p>{order.customer_name}</p>
                   <p>{order.email}{order.phone ? ` · ${order.phone}` : ""}</p>
                   <p>{order.shipping_address}</p>
-                  {order.paypal_capture_id && <p className="admin-muted">PayPal: {order.paypal_capture_id}</p>}
+                  <p className="admin-muted">
+                    {PAYMENT_TEXT[order.payment_method] ?? order.payment_method}
+                    {order.paypal_capture_id ? ` · ${order.paypal_capture_id}` : ""}
+                  </p>
+                  <p><Link href={`/order/${order.id}`} className="admin-muted" style={{ textDecoration: "underline" }}>View receipt</Link></p>
                 </div>
                 <ul>
                   {order.order_items.map((item, i) => (
@@ -97,7 +106,7 @@ async function OrdersTab({ showAll }: { showAll: boolean }) {
                 <input type="hidden" name="id" value={order.id} />
                 <select name="status" defaultValue={order.status} aria-label="Order status">
                   {ORDER_STATUSES.map((s) => (
-                    <option key={s} value={s}>{STATUS_TEXT[s]}</option>
+                    <option key={s} value={s}>{statusText(s, order.payment_method)}</option>
                   ))}
                 </select>
                 <button type="submit" className="btn">Update</button>
@@ -127,7 +136,7 @@ function SizeStockInputs({ values = {} }: { values?: Partial<Record<string, numb
 async function ProductsTab() {
   const { data: products, error } = await createAdminClient()
     .from("products")
-    .select("id, name, price, stock, image_url, is_active, product_variants(size, stock)")
+    .select("id, name, price, sale_price, description, stock, image_url, is_active, product_variants(size, stock)")
     .order("is_active", { ascending: false })
     .order("id");
 
@@ -140,9 +149,10 @@ async function ProductsTab() {
         <div className="admin-grid">
           <label>Name<input name="name" required maxLength={120} /></label>
           <label>Price (₱)<input name="price" type="number" min="1" step="0.01" required /></label>
+          <label>Sale price (₱, optional)<input name="sale_price" type="number" min="0.01" step="0.01" placeholder="Not on sale" /></label>
           <label className="admin-span-2">Image<input name="image" type="file" accept="image/png,image/jpeg,image/webp,image/avif" required /></label>
           <SizeStockInputs />
-          <label className="admin-wide">Description (optional)<textarea name="description" rows={2} maxLength={1000} /></label>
+          <label className="admin-wide">Product details (shown to customers)<textarea name="description" rows={4} maxLength={2000} placeholder="Fabric, fit, care, sizing notes…" /></label>
         </div>
         <button type="submit" className="btn">Add Product</button>
       </form>
@@ -161,9 +171,11 @@ async function ProductsTab() {
               <strong>{product.name}</strong>
               <span className="admin-muted">
                 {product.is_active ? "Listed" : "Archived"} · {product.stock} total
+                {product.sale_price != null ? " · On sale" : ""}
               </span>
             </div>
             <label>Price<input name="price" type="number" min="1" step="0.01" defaultValue={Number(product.price)} required /></label>
+            <label>Sale price<input name="sale_price" type="number" min="0.01" step="0.01" placeholder="None" defaultValue={product.sale_price == null ? "" : Number(product.sale_price)} /></label>
             <SizeStockInputs
               values={Object.fromEntries(product.product_variants.map((v) => [v.size, v.stock]))}
             />
@@ -172,6 +184,7 @@ async function ProductsTab() {
             </label>
             <label>New image<input name="image" type="file" accept="image/png,image/jpeg,image/webp,image/avif" /></label>
             <button type="submit" className="btn">Save</button>
+            <label className="admin-wide">Product details<textarea name="description" rows={3} maxLength={2000} defaultValue={product.description ?? ""} placeholder="Fabric, fit, care, sizing notes…" /></label>
           </form>
         ))}
       </div>

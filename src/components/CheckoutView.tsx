@@ -4,6 +4,7 @@ import { PayPalOneTimePaymentButton, PayPalProvider } from "@paypal/react-paypal
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { formatPeso } from "@/lib/format";
+import type { PaymentMethod } from "@/lib/orders";
 import { useCart } from "./CartProvider";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -15,6 +16,7 @@ export function CheckoutView() {
   const [agreedEcommerce, setAgreedEcommerce] = useState(false);
   const [agreedConsumer, setAgreedConsumer] = useState(false);
   const [processing, setProcessing] = useState(false);
+  const [method, setMethod] = useState<PaymentMethod>("paypal");
 
   // PayPal callbacks can outlive a render; read the latest values through refs.
   const latest = useRef({ customer, items });
@@ -22,7 +24,9 @@ export function CheckoutView() {
   const reference = useRef<string | null>(null);
 
   const formValid = customer.name.trim() !== "" && customer.address.trim() !== "" && EMAIL_RE.test(customer.email.trim());
-  const canPay = items.length > 0 && formValid && agreedEcommerce && agreedConsumer && !processing;
+  // COD: the courier phones before delivery, so a mobile number is required.
+  const phoneOk = method !== "cod" || customer.phone.replace(/\D/g, "").length >= 7;
+  const canPay = items.length > 0 && formValid && phoneOk && agreedEcommerce && agreedConsumer && !processing;
 
   const update = (field: keyof typeof customer) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setCustomer((c) => ({ ...c, [field]: e.target.value }));
@@ -34,6 +38,7 @@ export function CheckoutView() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         customer,
+        paymentMethod: "paypal",
         items: items.map((i) => ({ productId: i.productId, size: i.size, quantity: i.quantity })),
       }),
     });
@@ -44,6 +49,32 @@ export function CheckoutView() {
     }
     reference.current = data.reference;
     return { orderId: data.paypalOrderId as string };
+  }
+
+  async function placeCodOrder() {
+    if (!canPay) return;
+    setProcessing(true);
+    try {
+      const { customer, items } = latest.current;
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customer,
+          paymentMethod: "cod",
+          items: items.map((i) => ({ productId: i.productId, size: i.size, quantity: i.quantity })),
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        showToast(data.error ?? "Could not place your order.");
+        return;
+      }
+      clear();
+      router.push(`/order/${data.reference}`);
+    } finally {
+      setProcessing(false);
+    }
   }
 
   async function onApprove() {
@@ -67,7 +98,7 @@ export function CheckoutView() {
       <div className="checkout-container">
         <div className="checkout-header">
           <h2>Secure Checkout</h2>
-          <p>Payments processed securely by PayPal. Card details never touch our servers.</p>
+          <p>Pay securely with PayPal, or pay in cash when your order arrives. Card details never touch our servers.</p>
         </div>
 
         <div className="checkout-form">
@@ -84,9 +115,21 @@ export function CheckoutView() {
             <input id="email" type="email" placeholder="CLIENT@DOMAIN.COM" autoComplete="email" value={customer.email} onChange={update("email")} />
           </div>
           <div className="form-group">
-            <label htmlFor="phone">Mobile Number (optional)</label>
+            <label htmlFor="phone">Mobile Number{method === "cod" ? " (required for Cash on Delivery)" : " (optional)"}</label>
             <input id="phone" type="tel" placeholder="09XX XXX XXXX" autoComplete="tel" value={customer.phone} onChange={update("phone")} />
           </div>
+
+          <fieldset className="payment-methods">
+            <legend>Payment Method</legend>
+            <label className={`payment-option${method === "paypal" ? " selected" : ""}`}>
+              <input type="radio" name="payment-method" checked={method === "paypal"} onChange={() => setMethod("paypal")} />
+              <span>PayPal<small>Pay now with PayPal or a card.</small></span>
+            </label>
+            <label className={`payment-option${method === "cod" ? " selected" : ""}`}>
+              <input type="radio" name="payment-method" checked={method === "cod"} onChange={() => setMethod("cod")} />
+              <span>Cash on Delivery<small>Pay the courier in cash when your order arrives.</small></span>
+            </label>
+          </fieldset>
 
           <div className="legal-checkbox">
             <input type="checkbox" id="ra8792" checked={agreedEcommerce} onChange={(e) => setAgreedEcommerce(e.target.checked)} />
@@ -124,28 +167,38 @@ export function CheckoutView() {
           </div>
 
           <div className="paypal-area">
-            {processing && <p className="paypal-hint">Confirming payment…</p>}
+            {processing && <p className="paypal-hint">{method === "cod" ? "Placing your order…" : "Confirming payment…"}</p>}
             {!canPay && !processing && items.length > 0 && (
-              <p className="paypal-hint">Fill in your name, email and address and accept both agreements to pay.</p>
+              <p className="paypal-hint">
+                {method === "cod"
+                  ? "Fill in your name, email, address and mobile number and accept both agreements to place your order."
+                  : "Fill in your name, email and address and accept both agreements to pay."}
+              </p>
             )}
-            <PayPalProvider
-              clientId={process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID!}
-              environment={process.env.NEXT_PUBLIC_PAYPAL_ENV === "production" ? "production" : "sandbox"}
-              components={["paypal-payments"]}
-              pageType="checkout"
-            >
-              <PayPalOneTimePaymentButton
-                type="pay"
-                disabled={!canPay}
-                createOrder={createOrder}
-                onApprove={onApprove}
-                onCancel={() => showToast("Payment cancelled.")}
-                onError={(error) => {
-                  console.error("PayPal error:", error);
-                  showToast("PayPal error. Please try again.");
-                }}
-              />
-            </PayPalProvider>
+            {method === "cod" ? (
+              <button type="button" className="btn checkout-btn cod-btn" style={{ marginTop: 0 }} disabled={!canPay} onClick={placeCodOrder}>
+                Place Order · Pay {formatPeso(total)} on Delivery
+              </button>
+            ) : (
+              <PayPalProvider
+                clientId={process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID!}
+                environment={process.env.NEXT_PUBLIC_PAYPAL_ENV === "production" ? "production" : "sandbox"}
+                components={["paypal-payments"]}
+                pageType="checkout"
+              >
+                <PayPalOneTimePaymentButton
+                  type="pay"
+                  disabled={!canPay}
+                  createOrder={createOrder}
+                  onApprove={onApprove}
+                  onCancel={() => showToast("Payment cancelled.")}
+                  onError={(error) => {
+                    console.error("PayPal error:", error);
+                    showToast("PayPal error. Please try again.");
+                  }}
+                />
+              </PayPalProvider>
+            )}
           </div>
         </div>
       </div>

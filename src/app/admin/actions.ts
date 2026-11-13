@@ -33,6 +33,14 @@ function readSizeStock(formData: FormData) {
   return stock;
 }
 
+// Empty box = no sale (null). Otherwise must be a positive number below the regular price.
+function readSalePrice(formData: FormData, price: number): number | null | undefined {
+  const raw = String(formData.get("sale_price") ?? "").trim();
+  if (raw === "") return null;
+  const value = Number(raw);
+  return Number.isFinite(value) && value > 0 && value < price ? value : undefined; // undefined = invalid
+}
+
 async function saveSizeStock(productId: number, stock: Record<Size, number>) {
   const { error } = await createAdminClient()
     .from("product_variants")
@@ -75,6 +83,8 @@ export async function createProduct(formData: FormData) {
   if (!name || !(price > 0) || !stock) {
     done("products", "Name, a price above 0 and whole-number stock for each size are required.");
   }
+  const salePrice = readSalePrice(formData, price);
+  if (salePrice === undefined) done("products", "Sale price must be above 0 and lower than the regular price.");
   if (!(image instanceof File) || image.size === 0) {
     done("products", "Please choose a product image.");
   }
@@ -89,7 +99,7 @@ export async function createProduct(formData: FormData) {
   const admin = createAdminClient();
   const { data: product, error } = await admin
     .from("products")
-    .insert({ name, description: description || null, price, image_url: imageUrl, is_active: true })
+    .insert({ name, description: description || null, price, sale_price: salePrice, image_url: imageUrl, is_active: true })
     .select("id")
     .single();
 
@@ -106,12 +116,20 @@ export async function updateProduct(formData: FormData) {
   const price = readNumber(formData, "price");
   const stock = readSizeStock(formData);
   const isActive = formData.get("is_active") === "on";
+  const description = String(formData.get("description") ?? "").trim();
 
   if (!Number.isInteger(id) || !(price > 0) || !stock) {
     done("products", "Price must be above 0 and stock a whole number for each size.");
   }
+  const salePrice = readSalePrice(formData, price);
+  if (salePrice === undefined) done("products", "Sale price must be above 0 and lower than the regular price.");
 
-  const update: Record<string, unknown> = { price, is_active: isActive };
+  const update: Record<string, unknown> = {
+    price,
+    sale_price: salePrice,
+    description: description || null,
+    is_active: isActive,
+  };
 
   const image = formData.get("image");
   if (image instanceof File && image.size > 0) {
@@ -138,6 +156,16 @@ export async function updateOrderStatus(formData: FormData) {
     done("orders", "Invalid status.");
   }
 
-  const { error } = await createAdminClient().from("orders").update({ status }).eq("id", id);
-  done("orders", error ? `Could not update order: ${error.message}` : "Order updated.");
+  const admin = createAdminClient();
+
+  // Cancelling a COD order gives its reserved stock back (no-op for PayPal / already cancelled).
+  const { error } =
+    status === "cancelled"
+      ? await admin.rpc("cancel_cod_order", { p_order_id: id })
+      : { error: null };
+  if (error) done("orders", `Could not cancel order: ${error.message}`);
+
+  const { error: updateError } = await admin.from("orders").update({ status }).eq("id", id);
+  if (!updateError && status === "cancelled") revalidateTag(PRODUCTS_TAG, { expire: 0 });
+  done("orders", updateError ? `Could not update order: ${updateError.message}` : "Order updated.");
 }

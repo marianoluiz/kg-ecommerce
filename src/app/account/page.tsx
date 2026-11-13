@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { logout } from "@/app/login/actions";
 import { getCurrentUser } from "@/lib/auth";
 import { formatPeso } from "@/lib/format";
-import { formatOrderNumber, STATUS_TEXT } from "@/lib/orders";
+import { formatOrderNumber, statusText } from "@/lib/orders";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export const metadata: Metadata = { title: "My Account | KALLOS GORGON" };
@@ -17,9 +17,9 @@ export default async function AccountPage() {
   const ordersQuery = () =>
     admin
       .from("orders")
-      .select("id, order_number, status, total, created_at, order_items(product_name, size, quantity)")
-      // Abandoned checkouts (pending/failed) are hidden from the customer.
-      .not("status", "in", "(pending,failed)");
+      .select("id, order_number, status, payment_method, total, created_at, order_items(product_name, size, quantity)")
+      // Abandoned PayPal checkouts (pending/failed) are hidden; COD orders are real orders and always show.
+      .or("payment_method.eq.cod,status.not.in.(pending,failed)");
 
   // Guest orders placed with this email count too, but only once the user has proven they own it.
   const [own, guest] = await Promise.all([
@@ -84,7 +84,7 @@ export default async function AccountPage() {
                   ))}
                 </div>
                 <span className={`order-status${order.status === "paid" || order.status === "delivered" ? " paid" : ""}`}>
-                  {STATUS_TEXT[order.status] ?? order.status}
+                  {statusText(order.status, order.payment_method)}
                 </span>
                 <span className="order-row-total">{formatPeso(Number(order.total))}</span>
               </Link>

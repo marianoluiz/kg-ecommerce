@@ -1,5 +1,8 @@
+import { revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
-import { SIZES } from "@/data/products";
+import { SIZES, currentPrice } from "@/data/products";
+import { PAYMENT_METHODS, type PaymentMethod } from "@/lib/orders";
+import { PRODUCTS_TAG } from "@/lib/products";
 import { createPayPalOrder } from "@/lib/paypal";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -18,10 +21,13 @@ function bad(message: string, status = 400) {
   return NextResponse.json({ error: message }, { status });
 }
 
-// Creates a pending order (prices from the DB) and a matching PayPal order.
+// Creates a pending order (prices from the DB). PayPal: also creates the PayPal order.
+// Cash on Delivery: reserves stock immediately and the order is complete.
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
   if (!body) return bad("Invalid request.");
+
+  const paymentMethod: PaymentMethod = PAYMENT_METHODS.includes(body.paymentMethod) ? body.paymentMethod : "paypal";
 
   const customer = {
     name: text(body.customer?.name, 120),
@@ -31,6 +37,10 @@ export async function POST(request: Request) {
   };
   if (!customer.name || !customer.address || !EMAIL_RE.test(customer.email)) {
     return bad("Please fill in your name, a valid email and your shipping address.");
+  }
+  // The courier calls this number before delivery, so COD needs a real one.
+  if (paymentMethod === "cod" && customer.phone.replace(/\D/g, "").length < 7) {
+    return bad("Please enter a mobile number so the courier can reach you for Cash on Delivery.");
   }
 
   const rawItems: unknown[] = Array.isArray(body.items) ? body.items : [];
@@ -55,7 +65,7 @@ export async function POST(request: Request) {
 
   const { data: products, error: productError } = await admin
     .from("products")
-    .select("id, name, price, is_active, product_variants(size, stock)")
+    .select("id, name, price, sale_price, is_active, product_variants(size, stock)")
     .in("id", productIds);
 
   if (productError) {
@@ -92,7 +102,7 @@ export async function POST(request: Request) {
       product_name: product.name,
       size: item.size,
       quantity: item.quantity,
-      unit_price: Number(product.price),
+      unit_price: currentPrice({ price: Number(product.price), salePrice: product.sale_price == null ? null : Number(product.sale_price) }),
     };
   });
   const total = lines.reduce((sum, l) => sum + l.unit_price * l.quantity, 0);
@@ -113,6 +123,7 @@ export async function POST(request: Request) {
       total,
       currency: "PHP",
       status: "pending",
+      payment_method: paymentMethod,
     })
     .select("id")
     .single();
@@ -130,6 +141,22 @@ export async function POST(request: Request) {
     console.error("Order items insert failed:", itemsError);
     await admin.from("orders").delete().eq("id", order.id);
     return bad("Could not create your order.", 500);
+  }
+
+  if (paymentMethod === "cod") {
+    // Takes stock atomically; fails (and rolls back) if someone else just bought the last unit.
+    const { error: reserveError } = await admin.rpc("place_cod_order", { p_order_id: order.id });
+    if (reserveError) {
+      await admin.from("order_items").delete().eq("order_id", order.id);
+      await admin.from("orders").delete().eq("id", order.id);
+      if (reserveError.message.includes("out_of_stock")) {
+        return bad("Sorry, an item in your cart just sold out.", 409);
+      }
+      console.error("COD reservation failed:", reserveError);
+      return bad("Could not place your order.", 500);
+    }
+    revalidateTag(PRODUCTS_TAG, { expire: 0 });
+    return NextResponse.json({ reference: order.id });
   }
 
   try {
