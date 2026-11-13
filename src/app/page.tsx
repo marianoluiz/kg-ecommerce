@@ -20,9 +20,11 @@ export default function HomePage() {
     <>
       <Hero />
       {/* The hero renders immediately; products stream in behind a skeleton. */}
-      <Suspense fallback={<ProductGridSkeleton />}>
-        <Products />
-      </Suspense>
+      <div id="shop" className="shop-anchor">
+        <Suspense fallback={<ProductGridSkeleton />}>
+          <Products />
+        </Suspense>
+      </div>
       <BrandDetails />
       <PromoBanner />
     </>

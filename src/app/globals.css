@@ -767,3 +767,5 @@ button { font: inherit; color: inherit; }
 .processing-overlay p { font-size: 0.85rem; letter-spacing: 0.15em; text-transform: uppercase; margin: 0; }
 .processing-overlay span { font-size: 0.7rem; color: #888; letter-spacing: 0.05em; }
 @media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 1.6s; } .modal-content { animation: none; } }
+
+.shop-anchor { scroll-margin-top: 4rem; }
