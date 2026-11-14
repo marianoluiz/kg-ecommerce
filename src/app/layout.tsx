@@ -13,6 +13,10 @@ const playfair = Playfair_Display({ subsets: ["latin"], weight: ["400", "600"], 
 export const metadata: Metadata = {
   title: "KALLOS GORGON | High Fashion Meets Tropical Utility",
   description: "Climate-engineered high fashion for the Philippine tropics, powered by Quadros Technology™.",
+  icons: {
+    icon: "/images/brand/logo.png",
+    apple: "/images/brand/logo.png",
+  },
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
